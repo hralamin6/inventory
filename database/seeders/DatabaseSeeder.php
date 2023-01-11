@@ -24,11 +24,12 @@ class DatabaseSeeder extends Seeder
             'password'=>Hash::make('000000')
         ]);
 
-             \App\Models\User::factory(10)->create();
-             \App\Models\Category::factory(10)->create();
-             \App\Models\Brand::factory(10)->create();
-             \App\Models\Unit::factory(10)->create();
-             \App\Models\Product::factory(30)->create();
+//             \App\Models\User::factory(10)->create();
+//             \App\Models\Category::factory(10)->create();
+//             \App\Models\Brand::factory(10)->create();
+//             \App\Models\Unit::factory(10)->create();
+//             \App\Models\Product::factory(30)->create();
+             \App\Models\Setup::factory(1)->create();
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',

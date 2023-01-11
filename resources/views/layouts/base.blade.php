@@ -26,13 +26,22 @@
         @endif
         <link rel="shortcut icon" href="{{ url(asset('favicon.ico')) }}">
 {{--        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">--}}
+        <style>
+            [x-cloak] {
+                display: none;
+            }
 
+            @media print {
+                #header, #footer, #url {
+                    display: none;
+                }
+            }
+        </style>
         @vite(['resources/sass/app.scss'])
         @livewireStyles
                 @vite(['resources/js/app.js'])
         @stack('js')
-{{--        <script src="{{ asset('js/app.js') }}" defer></script>--}}
-
+        @laravelPWA
     </head>
 
     <body class="dark:bg-darkBg text-tahiti scrollbar-none" x-data="{nav: false, dark: $persist(false)}" :class="{'dark': dark}">

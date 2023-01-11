@@ -11,6 +11,8 @@ use App\Http\Livewire\Auth\Verify;
 use Illuminate\Support\Facades\Route;
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', \App\Http\Livewire\Dashboard\DashboardComponent::class)->name('dashboard');
+    Route::get('/dashboard/setup', \App\Http\Livewire\Dashboard\SetupComponent::class)->name('setup');
+    Route::get('/dashboard/invoice', \App\Http\Livewire\Dashboard\InvoiceComponent::class)->name('dashboard.invoice');
     Route::get('/dashboard/users', \App\Http\Livewire\Dashboard\UserComponent::class)->name('users');
     Route::get('/dashboard/categories', \App\Http\Livewire\Dashboard\CategoryComponent::class)->name('categories');
     Route::get('/dashboard/brands', \App\Http\Livewire\Dashboard\BrandComponent::class)->name('brands');
@@ -23,6 +25,8 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', LogoutController::class)->name('logout');
 });
 Route::get('pdf', [\App\Http\Controllers\PdfController::class, 'index'])->name('pdf');
+Route::get('invoice/pdf/{slug:id}', [\App\Http\Controllers\PdfController::class, 'invoice'])->name('pdf.invoice');
+Route::get('purchase/pdf/{slug:id}', [\App\Http\Controllers\PdfController::class, 'purchase'])->name('pdf.purchase');
 Route::view('/', 'welcome')->name('home');
 Route::middleware('guest')->group(function () {
     Route::get('login', Login::class)->name('login');

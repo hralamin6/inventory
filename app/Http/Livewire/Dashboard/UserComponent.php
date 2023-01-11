@@ -118,7 +118,7 @@ class UserComponent extends Component
     }
     public function getDataProperty()
     {
-        return User::where($this->searchBy, 'like', '%'.$this->search.'%')->orderBy($this->orderBy, $this->orderDirection)->paginate($this->itemPerPage, ['id', 'name', 'email', 'phone', 'address', 'note', 'type', 'status', 'created_at'])->withQueryString();
+        return User::with('invoices', 'purchases')->where($this->searchBy, 'like', '%'.$this->search.'%')->orderBy($this->orderBy, $this->orderDirection)->paginate($this->itemPerPage, ['id', 'name', 'email', 'phone', 'address', 'note', 'type', 'status', 'created_at'])->withQueryString();
     }
 
     public function resetData()

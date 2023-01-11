@@ -20,26 +20,32 @@
             <div class="capitalize">
 
                 <a href="{{route('dashboard')}}" class="navMenuLink {{Route::is('dashboard')?'navActive':'navInactive'}}">
-                    <x-h-o-home class="w-6"/><span class="">dashboard</span>
+                    <x-h-o-home class="w-6"/><span class="">@lang('dashboard')</span>
                 </a>
                 <a href="{{route('users')}}" class="navMenuLink {{Route::is('users')?'navActive':'navInactive'}}">
-                    <x-h-o-users class="w-6"/><span class="">users</span>
+                    <x-h-o-users class="w-6"/><span class="">@lang('users')</span>
                 </a>
                 <a href="{{route('categories')}}" class="navMenuLink {{Route::is('categories')?'navActive':'navInactive'}}">
-                    <x-h-o-banknotes class="w-6"/><span class="">categories</span>
+                    <x-h-o-cube-transparent class="w-6"/><span class="">@lang('categories')</span>
                 </a>
                 <a href="{{route('brands')}}" class="navMenuLink {{Route::is('brands')?'navActive':'navInactive'}}">
-                    <x-h-o-speaker-wave class="w-6"/><span class="">brands</span>
+                    <x-h-o-cube class="w-6"/><span class="">@lang('brands')</span>
                 </a>
                 @can('isAdmin')
                     <a href="{{route('units')}}" class="navMenuLink {{Route::is('units')?'navActive':'navInactive'}}">
-                        <x-h-o-funnel class="w-6"/><span class="">units</span>
+                        <x-h-o-funnel class="w-6"/><span class="">@lang('units')</span>
                     </a>
                     <a href="{{route('products')}}" class="navMenuLink {{Route::is('products')?'navActive':'navInactive'}}">
-                        <x-h-o-printer class="w-6"/><span class="">products</span>
+                        <x-h-o-circle-stack class="w-6"/><span class="">@lang('products')</span>
                     </a>
                     <a href="{{route('purchases')}}" class="navMenuLink {{Route::is('purchases')?'navActive':'navInactive'}}">
-                        <x-h-o-shopping-cart class="w-6"/><span class="">purchases</span>
+                        <x-h-o-shopping-cart class="w-6"/><span class="">@lang('purchase')</span>
+                    </a>
+                    <a href="{{route('dashboard.invoice')}}" class="navMenuLink {{Route::is('dashboard.invoice')?'navActive':'navInactive'}}">
+                        <x-h-o-shopping-bag class="w-6"/><span class="">@lang('invoices')</span>
+                    </a>
+                    <a href="{{route('setup')}}" class="navMenuLink {{Route::is('setup')?'navActive':'navInactive'}}">
+                        <x-h-o-server class="w-6"/><span class="">@lang('setup')</span>
                     </a>
                 @endcan
 {{--                <a href="{{route('units')}}" class="navMenuLink {{Route::is('units')?'navActive':'navInactive'}}">--}}

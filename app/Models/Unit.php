@@ -12,5 +12,13 @@ class Unit extends Model
         'name',
         'status',
     ];
+    public function buyingProducts()
+    {
+        return $this->hasMany(Product::class, 'buying_unit_id', 'id');
+    }
+    public function sellingProducts()
+    {
+        return $this->hasMany(Product::class, 'selling_unit_id', 'id');
+    }
 
 }

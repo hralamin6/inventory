@@ -15,6 +15,12 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
+            $table->string('invoice_no');
+            $table->string('date');
+            $table->double('total')->default(0);
+            $table->string('note')->nullable();
+            $table->string('status')->default('inactive');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

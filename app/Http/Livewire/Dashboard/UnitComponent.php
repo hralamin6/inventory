@@ -103,7 +103,7 @@ class UnitComponent extends Component
     }
     public function getDataProperty()
     {
-        return Unit::where($this->searchBy, 'like', '%'.$this->search.'%')->orderBy($this->orderBy, $this->orderDirection)->paginate($this->itemPerPage, ['id', 'name', 'status', 'created_at'])->withQueryString();
+        return Unit::with('buyingProducts', 'sellingProducts')->where($this->searchBy, 'like', '%'.$this->search.'%')->orderBy($this->orderBy, $this->orderDirection)->paginate($this->itemPerPage, ['id', 'name', 'status', 'created_at'])->withQueryString();
     }
 
     public function resetData()

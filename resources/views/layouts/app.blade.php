@@ -17,8 +17,8 @@
         @include('layouts.sidebar')
         {{--        <livewire:sidebar-component />--}}
         <div class="flex flex-col flex-1 w-full">
-{{--            <livewire:header-component />--}}
-            @include('layouts.header')
+            <livewire:header-component />
+{{--            @include('layouts.header')--}}
             <main class="h-full overflow-y-auto dark:bg-darkBg">
                 <div class="m-2">
 

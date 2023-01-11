@@ -16,7 +16,13 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->text('overview')->nullable();
+            $table->text('description')->nullable();
             $table->double('quantity')->default(0);
+            $table->double('buying_quantity')->default(0);
+            $table->double('selling_quantity')->default(0);
+            $table->double('regular_price')->default(0);
+            $table->double('actual_price')->default(0);
             $table->double('unit_relation')->default(1);
             $table->string('status')->default('inactive');
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();

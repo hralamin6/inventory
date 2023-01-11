@@ -15,6 +15,10 @@ return new class extends Migration
     {
         Schema::create('payment_details', function (Blueprint $table) {
             $table->id();
+            $table->double('current_paid_amount')->default(0);
+            $table->date('date')->nullable();
+            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
+
             $table->timestamps();
         });
     }

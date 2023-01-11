@@ -6,7 +6,14 @@ input:invalid, textarea:invalid, select:invalid {
 @tailwind components;
 
 @tailwind utilities;
-
+@page {
+   size: auto;
+   margin: 0;
+}
+@font-face {
+    font-family: MyFont;
+    src: url("../../public/font/a.ttf");
+}
 [x-cloak] {
     display: none;
 }
@@ -14,7 +21,16 @@ input:invalid, textarea:invalid, select:invalid {
     width: 10px;
     height: 10px;
 }
-
+@media print {
+    @page {
+    margin-top: 0;
+    margin-bottom: 0;
+    }
+    body {
+        padding-top: 72px;
+        padding-bottom: 72px ;
+    }
+}
 .scrollbar::-webkit-scrollbar-track {
     border-radius: 50vh;
     background: #f7f4ed;
@@ -91,6 +107,12 @@ input:invalid, textarea:invalid, select:invalid {
 }
 
 @layer components {
+    .input{
+        @apply block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-600 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring
+    }
+    .btn{
+        @apply px-8 py-2.5 leading-5 text-white transition-colors duration-300 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600
+    }
     .btn-primary {
         @apply text-white bg-purple-600 py-2 px-4 rounded shadow-md hover:bg-purple-700 active:bg-purple-800 transition-colors;
     }

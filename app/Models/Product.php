@@ -1,17 +1,21 @@
 <?php
 
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
-class Product extends Model
+use Spatie\Image\Manipulations;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+class Product extends Model implements HasMedia
 {
     use HasFactory;
-    protected $fillable = [
-        'name', 'status', 'category_id', 'brand_id', 'quantity', 'unit_relation', 'buying_unit_id', 'selling_unit_id'
-];
+    protected $guarded = [];
     public function purchaseDetails()
+    {
+        return $this->hasMany(PurchaseDetail::class);
+    }
+    public function invoiceDetails()
     {
         return $this->hasMany(PurchaseDetail::class);
     }
@@ -32,5 +36,19 @@ class Product extends Model
         return $this->belongsTo(Unit::class, 'selling_unit_id', 'id')->withDefault();
     }
 
-
+    use InteractsWithMedia;
+//    public function registerMediaConversions(Media $media = null): void
+//    {
+//        $this
+//            ->addMediaConversion('preview')
+//            ->fit(Manipulations::FIT_CROP, 300, 300)
+//            ->nonQueued();
+//    }
+    public function registerMediaConversions(Media $media = null) : void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(368)
+            ->height(232)
+            ->sharpen(10);
+    }
 }

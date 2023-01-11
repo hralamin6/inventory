@@ -1,4 +1,4 @@
-<div class=" rounded-xl mt-4" x-data="{openTable: $persist(true), modal: false, editMode: false,
+<div class=" rounded-xl mt-4" x-data="{openTable: $persist(true), modal: false, editMode: false, selectedField: $persist(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']),
 addModal() { this.modal = true; this.editMode = false; $nextTick(() => $refs.input.focus()); },
 editModal(id) { $wire.loadData(id); this.modal = true; this.editMode = true; $nextTick(() => $refs.input.focus()); },
 closeModal() { this.modal = false; this.editMode = false; $wire.resetData()},
@@ -39,10 +39,13 @@ Swal.fire({
 >
     <div class="grid grid-cols-3 gap-2 mt-4 justify-center">
         <div class="w-24">
-            <input wire:model.debounce.1000ms="itemPerPage" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+            <x-input wire:model.debounce.1000ms="itemPerPage" type="number"/>
         </div>
         <div class="w-96">
             <x-input placeholder="search" wire:model.debounce="search" type="search"/>
+        </div>
+        <div class="w-96">
+            <x-input x-model="selectedField" />
         </div>
         <div class="w-36">
             <x-select wire:model="searchBy" >
@@ -58,6 +61,8 @@ Swal.fire({
     <aside class="border dark:border-gray-600 row-span-4 bg-white dark:bg-darkSidebar" x-data="{rows: @entangle('selectedRows').defer, selectPage: @entangle('selectPageRows')}">
         <div class="flex justify-between gap-3 bg-white border dark:border-gray-600 dark:bg-darkSidebar px-4 py-2">
             <p class="text-gray-600 dark:text-gray-200">Products Table</p>
+            <center><a href="javascript:void(0);" onclick="printPageArea('printableArea')">print</a></center>
+
             {{--            <a class="text-blue-500" href="{{route('admin.quiz')}}">all quiz</a>--}}
             <div class="flex justify-center capitalize gap-4 text-gray-500 dark:text-gray-300 capitalize">
                 <button @click.prevent="addModal" class="flex gap-1 text-white capitalize hover:bg-blue-700 p-2 font-semibold text-sm bg-blue-500 rounded">
@@ -71,7 +76,7 @@ Swal.fire({
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                 </button>
-                <div x-cloak x-show="rows.length > 0 " class="flex items-center justify-center" x-data="{bulk: false}">
+                <div  x-cloak x-show="rows.length > 0 " class="flex items-center justify-center" x-data="{bulk: false}">
                     <div class="relative inline-block">
                         <!-- Dropdown toggle button -->
                         <button @click="bulk=!bulk" class="relative z-10 block px-2 text-gray-700 border border-transparent rounded-md dark:text-white focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 dark:focus:ring-blue-400 focus:ring focus:outline-none">
@@ -96,7 +101,7 @@ Swal.fire({
         <div x-cloak x-show="openTable" x-collapse>
             <div class="mb-1 overflow-y-scroll scrollbar-none">
                 <div class="w-full overflow-x-auto">
-                    <table class="w-full whitespace-no-wrap">
+                    <table class="w-full font-myfont whitespace-no-wrap">
                         <thead>
                         <tr
                             class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-300 dark:bg-darkSidebar"
@@ -106,6 +111,7 @@ Swal.fire({
                             </th>
                             <x-field :OB="$orderBy" :OD="$orderDirection" :field="'id'">@lang('sl')</x-field>
                             <x-field :OB="$orderBy" :OD="$orderDirection" :field="'name'">@lang('name')</x-field>
+                            <x-field>@lang('image')</x-field>
                             <x-field :OB="$orderBy" :OD="$orderDirection" :field="'category_id'">@lang('category')</x-field>
                             <x-field :OB="$orderBy" :OD="$orderDirection" :field="'brand_id'">@lang('brand')</x-field>
                             <x-field :OB="$orderBy" :OD="$orderDirection" :field="'quantity'">@lang('quantity')</x-field>
@@ -127,6 +133,17 @@ Swal.fire({
                                 </td>
                                 <td class="px-4 py-3">{{$items->firstItem() + $i}}</td>
                                 <td class="px-4 py-3 text-sm">{{ $item->name }} </td>
+                                <td class="px-4 py-3 text-sm">
+{{--                                    @php($asdf = $item->getMedia())--}}
+{{--                                    <span>{{$asdf[0]->getAvailableUrl(['default', 'thumb'])}}</span>--}}
+
+                                    @foreach($item->getMedia() as $k => $media)
+{{--                                        @php($m = $media->delete())--}}
+                                    <img style="height: 66px; width: 66px;" src="{{$media->getAvailableUrl(['thumb'])}}" alt="asdf">
+                                        <button class="text-sm font-bold" wire:click.prevent="deleteMedia({{$item}}, {{$k}})">Delete</button>
+                                        @endforeach
+
+                                </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->category->name }} </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->brand->name }} </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->quantity }} </td>
@@ -141,8 +158,10 @@ Swal.fire({
                                 <td class="px-4 py-3 text-sm">{{ $item->created_at }} </td>
                                 <td class="px-4 py-3 text-sm flex space-x-4">
                                     <x-h-o-pencil-square wire:target="loadData({{$item->id}})" wire:loading.class="animate-spin" @click.prevent="editModal({{$item->id}})" class="w-5 text-purple-600 cursor-pointer"/>
-{{--                                    <x-loader  wire:target="loadData({{$item->id}})"/>--}}
+                                    @if($item->invoiceDetails->has(0) || $item->purchaseDetails->has(0))
+                                    @else
                                     <x-h-o-trash @click.prevent="$dispatch('open-delete-modal', { title: 'Hello World!', text: 'you cant revert', icon: 'error', eventName: 'deleteSingle', model: {{$item->id}} })" class="w-5 text-pink-500 cursor-pointer"/>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -152,11 +171,11 @@ Swal.fire({
                     </table>
                 </div>
                 <div class="mx-auto my-4 px-4">
-                    {{--                    {{ $items->links('vendor.pagination.default') }}--}}
                     {{ $items->links() }}
                 </div>
             </div>
         </div>
+
     </aside>
 
     <div x-cloak x-show="modal">
@@ -174,9 +193,29 @@ Swal.fire({
                             @error('name')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
+                            <label class="text-gray-700 dark:text-gray-200" for="input">@lang('overview')</label>
+                            <input wire:model.lazy="overview" type="text" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            @error('overview')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="text-gray-700 dark:text-gray-200" for="input">@lang('description')</label>
+                            <input wire:model.lazy="description" type="text" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            @error('description')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('quantity')</label>
                             <input wire:model.lazy="quantity" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
                             @error('quantity')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="text-gray-700 dark:text-gray-200" for="input">@lang('regular price')</label>
+                            <input wire:model.lazy="regular_price" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            @error('regular_price')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="text-gray-700 dark:text-gray-200" for="input">@lang('actual price')</label>
+                            <input wire:model.lazy="actual_price" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            @error('actual_price')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('unit relation')</label>
@@ -227,6 +266,31 @@ Swal.fire({
                             </x-select>
                             @error('status')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
+                        <div>
+                            <div class="list-inline flex justify-between gap-3"  x-data="{ isUploading: false, progress: 0 }" x-on:livewire-upload-start="isUploading = true" x-on:livewire-upload-finish="isUploading = false" x-on:livewire-upload-error="isUploading = false" x-on:livewire-upload-progress="progress = $event.detail.progress">
+                                <label class="cursor-pointer flex justify-content-start gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                    </svg>
+                                    {{__("Choose image")}}
+                                    <input type="file" class="" wire:model.lazy="image">
+                                </label>
+                                <div class="col-md-4 list-inline-item" x-show="isUploading">
+                                    <progress max="100" x-bind:value="progress"></progress>
+                                </div>
+                                @if($product!=null)
+{{--                                    @php(dd($product->getUrl()))--}}
+                                    <img style="height: 66px; width: 66px;" src="{{$product->getFirstMediaUrl('default', 'thumb')}}" alt="">
+                                @endif
+                            </div>
+                            @error('image')<span class="text-sm text-red-600 dark:text-red-400">{{ $message }}</span>@enderror
+                        </div>
+                        <div>
+                            <label class="text-gray-700 dark:text-gray-200" for="input">@lang('image link')</label>
+                            <input wire:model.lazy="image_link" type="url" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            @error('image_link')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+
                     </div>
                     <div class="flex items-center justify-between w-full mt-4">
                         <button type="button" @click="closeModal" class="bg-red-600 focus:ring-gray-400 transition duration-150 text-white ease-in-out hover:bg-red-300 rounded px-8 py-2 text-sm">Cancel</button>
@@ -238,4 +302,15 @@ Swal.fire({
         </div>
     </div>
 </div>
-
+@push('js')
+    <script>
+        function printPageArea(areaID){
+            var printContent = document.getElementById(areaID);
+            var WinPrint = window.open('', '', 'scrollbars=yes, width=900,height=650');
+            WinPrint.document.write(printContent.innerHTML);
+            WinPrint.document.close();
+            WinPrint.focus();
+            WinPrint.onload = WinPrint.print;
+        }
+    </script>
+@endpush

@@ -27,8 +27,9 @@ class PurchaseComponent extends Component
     public $purchaseDetails;
     public $bill;
     public $billDetail;
+    public $billDetails;
     public $products;
-    public $date, $paid_amount, $supplier_id, $note, $grand_total, $discount, $total, $purchase_no, $product_id;
+    public $date, $paid_amount=0, $supplier_id, $note, $grand_total, $discount=0, $total, $purchase_no, $product_id;
     public $name, $status='active', $quantity=0, $unit_relation=1, $category_id, $brand_id, $buying_unit_id, $selling_unit_id;
     public $selectedRows = [];
     public $selectPageRows = false;
@@ -55,16 +56,48 @@ class PurchaseComponent extends Component
         'inputs.*.unit_price' => 'Unit price',
         'supplier_id' => 'Supplier',
     ];
-    public function createPDF() {
-        return $this->redirectRoute('pdf');
+    public function generate_pdf()
+    {
+        return response()->streamDownload(function () {
+            $items = Product::all();
+            $pdf = PDF::loadView('pdf.products', compact('items'));
+            return $pdf->stream('document.pdf');
+        }, 'products.pdf');
+
     }
-     public function mount()
+    public function mount()
     {
         $this->fill([
             'inputs' => collect([]),
         ]);
         $this->products = $this->product;
         $this->setValue();
+        $this->purchaseDetails = [];
+        $this->billDetails = [];
+
+    }
+
+    public function PaidNew()
+    {
+        $data = $this->validate([
+            'date' => ['required','date'],
+            'paid_amount' => ['required', 'numeric'],
+        ]);
+        if ($this->paid_amount<=$this->bill->due_amount){
+            $data = BillDetail::create(['current_paid_amount'=>$this->paid_amount, 'date'=>$this->date, 'purchase_id'=> $this->purchase->id]);
+            $this->bill->paid_amount += ((float)$this->paid_amount);
+            $this->bill->due_amount -= ((float)$this->paid_amount);
+            $this->bill->save();
+            $this->bill = Bill::where('purchase_id', $this->purchase->id)->first();
+            $this->billDetails = BillDetail::where('purchase_id', $this->purchase->id)->get();
+            $this->reset('date', 'paid_amount');
+            $this->emit('dataAdded', ['dataId' => 'item-id-'.$data->id]);
+            $this->alert('success', __('Data updated successfully'));
+        }else{
+            $this->alert('error', __('Your Due Amount is not so much'));
+
+        }
+
     }
 
     public function setValue()
@@ -143,7 +176,6 @@ class PurchaseComponent extends Component
     public function loadData(Purchase $purchase)
     {
         $this->reset('purchase_no', 'date', 'supplier_id', 'total', 'grand_total', 'discount', 'note', 'paid_amount');
-        $this->emit('openEditModal');
         $this->purchase_no = $purchase->purchase_no;
         $this->date = $purchase->date;
         $this->grand_total = $purchase->total;
@@ -161,6 +193,13 @@ class PurchaseComponent extends Component
             $this->inputs->push(['product_id'=>$purchaseDetail->product_id, 'quantity'=>$purchaseDetail->quantity, 'unit_price'=>$purchaseDetail->unit_price]);
         }
     }
+    public function viewProduct(Purchase $purchase)
+    {
+        $this->purchase = $purchase;
+        $this->purchaseDetails = PurchaseDetail::where('purchase_id', $purchase->id)->get();
+        $this->bill = Bill::where('purchase_id', $purchase->id)->first();
+        $this->billDetails = BillDetail::where('purchase_id', $purchase->id)->get();
+    }
 
     public function openModal()
     {
@@ -172,9 +211,11 @@ class PurchaseComponent extends Component
     {
         $data = $this->validate([
             'date' => ['required','date'],
+            'purchase_no' => ['required', 'numeric', Rule::unique('purchases', 'purchase_no')->ignore($this->purchase['id'])],
             'supplier_id' => ['required', 'numeric'],
             'paid_amount' => ['required', 'numeric'],
             'note' => ['nullable'],
+            'discount' => ['required'],
         ]);
         $this->validate();
         if (count($this->inputs)>=1){
@@ -238,9 +279,11 @@ class PurchaseComponent extends Component
     {
         $data = $this->validate([
             'date' => ['required','date'],
+            'purchase_no' => ['required', 'numeric', Rule::unique('purchases', 'purchase_no')],
             'supplier_id' => ['required', 'numeric'],
             'paid_amount' => ['required', 'numeric'],
             'note' => ['nullable'],
+            'discount' => ['required'],
         ]);
         $this->validate();
         if (count($this->inputs)>=1){
@@ -296,6 +339,8 @@ class PurchaseComponent extends Component
                 $this->goToPage($this->getDataProperty()->lastPage());
                 $this->emit('dataAdded', ['dataId' => 'item-id-'.$purchase->id]);
                 $this->alert('success', __('Data saved successfully'));
+                $this->setValue();
+
             }
 
         }else{
@@ -328,9 +373,11 @@ class PurchaseComponent extends Component
                 $pd = PurchaseDetail::where('id', $purchaseDetail->id)->first();
                 if ($purchase->status=='inactive'){
                     $product->quantity += ((float)$purchaseDetail->quantity);
+                    $product->buying_quantity += ((float)$purchaseDetail->quantity);
                     $pd->status='active';
                 }else{
                     $product->quantity -= ((float)$purchaseDetail->quantity);
+                    $product->buying_quantity-= ((float)$purchaseDetail->quantity);
                     $pd->status='inactive';
                 }
                 $product->save();

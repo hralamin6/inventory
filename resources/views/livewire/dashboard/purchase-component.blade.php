@@ -1,8 +1,8 @@
 <div class=" rounded-xl mt-4" x-data="{openTable: $persist(true), modal: false, editMode: false, viewProduct:false,
 addModal() { this.modal = true; this.editMode = false; },
-viewData(id) { $wire.loadData(id); this.viewProduct = true;  },
+viewData(id) { $wire.viewProduct(id); this.viewProduct = true;  },
 editModal(id) { $wire.loadData(id); this.modal = true; this.editMode = true;},
-closeModal() { this.modal = false; this.editMode = false; $wire.resetData()},
+closeModal() { this.modal = false; this.viewProduct = false; this.editMode = false; $wire.resetData()},
 }"
      x-init="
      $wire.on('dataAdded', (e) => {
@@ -64,7 +64,7 @@ Swal.fire({
                 <button @click.prevent="addModal" class="flex gap-1 text-white capitalize hover:bg-blue-700 p-2 font-semibold text-sm bg-blue-500 rounded">
                     <x-h-o-plus-circle class="w-5"/>
                     @lang('add new')</button>
-                <button wire:click.prevent="createPDF" class="flex gap-1 text-white capitalize hover:bg-blue-700 p-2 font-semibold text-sm bg-blue-500 rounded">
+                <button wire:click.prevent="generate_pdf" class="flex gap-1 text-white capitalize hover:bg-blue-700 p-2 font-semibold text-sm bg-blue-500 rounded">
                     <x-h-o-film class="w-5"/>
                     @lang('pdf')</button>
                 <button class="" @click="openTable = !openTable">
@@ -138,10 +138,12 @@ Swal.fire({
                                 </span></td>
                                 <td class="px-4 py-3 text-sm">{{ $item->created_at }} </td>
                                 <td class="px-4 py-3 text-sm flex space-x-4">
-                                    <x-h-o-eye wire:target="loadData({{$item->id}})" wire:loading.class="animate-spin" @click.prevent="viewData({{$item->id}})" class="w-5 text-purple-600 cursor-pointer"/>
+                                    <a target="_blank" href="{{route('pdf.purchase', $item->id)}}" data-turbolinks="false"><x-h-o-printer class="w-5 text-purple-600 cursor-pointer"/></a>
+                                    <x-h-o-identification wire:target="viewProduct({{$item->id}})" wire:loading.class="animate-spin" @click.prevent="viewData({{$item->id}})" class="w-5 text-purple-600 cursor-pointer"/>
                                     <x-h-o-pencil-square wire:target="loadData({{$item->id}})" wire:loading.class="animate-spin" @click.prevent="editModal({{$item->id}})" class="w-5 text-purple-600 cursor-pointer"/>
-{{--                                    <x-loader  wire:target="loadData({{$item->id}})"/>--}}
+                                   @if($item->status=='inactive')
                                     <x-h-o-trash @click.prevent="$dispatch('open-delete-modal', { title: 'Hello World!', text: 'you cant revert', icon: 'error', eventName: 'deleteSingle', model: {{$item->id}} })" class="w-5 text-pink-500 cursor-pointer"/>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -170,6 +172,7 @@ Swal.fire({
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4 lg:grid-cols-6">
                             <div>
                                 <x-input wire:model="purchase_no" class="bg-indigo-100" readonly/>
+                                @error('purchase_no')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                             </div>
                             <div>
                                 <x-input wire:model="date" type="date" class="bg-purple-100"/>
@@ -240,11 +243,11 @@ Swal.fire({
                                             {{\App\Models\Product::find($inputs[$key]['product_id'])->name}}
                                         </td>
                                         <td class="px-4 py-3">
-                                            <x-input wire:model="inputs.{{ $key }}.quantity" type="number" />
+                                            <x-input wire:model.lazy="inputs.{{ $key }}.quantity" type="number" />
                                             @error('inputs.'.$key.'.quantity')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                                         </td>
                                         <td class="px-4 py-3">
-                                            <x-input wire:model="inputs.{{ $key }}.unit_price" type="number" />
+                                            <x-input wire:model.lazy="inputs.{{ $key }}.unit_price" type="number" />
                                             @error('inputs.'.$key.'.unit_price')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                                         </td>
                                         <td class="px-4 py-3">
@@ -270,7 +273,9 @@ Swal.fire({
                                     <td></td>
                                     <td class="text-gray-500 dark:text-gray-300 font-semibold text-xs">discount:</td>
                                     <td class="px-4 py-3 ">
-                                        <x-input wire:model.debounce="discount" class="bg-red-100 h-8" type="number"/>
+                                        <x-input wire:model.lazy="discount" class="bg-red-100 h-8" type="number"/>
+                                        @error('discount')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+
                                     </td>
                                 </tr>
                                 <tr>
@@ -289,7 +294,8 @@ Swal.fire({
                             <div>
                                 <label class="text-gray-700 dark:text-gray-200" for="supplier_id">@lang('supplier')</label>
                                 <x-select id="supplier_id" wire:model.lazy="supplier_id" class="w-72">
-                                    @foreach($suppliers as $supplier)
+                                    <option value="">@lang('select supplier')</option>
+                                @foreach($suppliers as $supplier)
                                         <option value="{{$supplier->id}}">{{$supplier->name}}</option>
                                     @endforeach
                                 </x-select>
@@ -305,11 +311,11 @@ Swal.fire({
                                 <x-input wire:model.debounce="paid_amount" type="number"/>
                                 @error('paid_amount')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                             </div>
-                            <div>
-                                <button wire:click.prevent="saveData" class="flex gap-1 mt-8 text-white capitalize hover:bg-blue-700 p-2 font-semibold text-sm bg-blue-500 rounded">
-                                    <x-h-s-rectangle-group class="w-5"/>
-                                    @lang('submit')</button>
-                            </div>
+{{--                            <div>--}}
+{{--                                <button wire:click.prevent="saveData" class="flex gap-1 mt-8 text-white capitalize hover:bg-blue-700 p-2 font-semibold text-sm bg-blue-500 rounded">--}}
+{{--                                    <x-h-s-rectangle-group class="w-5"/>--}}
+{{--                                    @lang('submit')</button>--}}
+{{--                            </div>--}}
                         </div>
                     </aside>
 
@@ -322,129 +328,6 @@ Swal.fire({
             </div>
         </div>
     </div>
-    <div x-cloak x-show="viewProduct">
-        <div class="fixed inset-0 z-10 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center"></div>
-        <div  class="inset-0 py-4 rounded-xl transition duration-150 ease-in-out z-50 absolute" id="modal">
-            <div  @click.outside="viewProduct=!viewProduct" class="container mx-auto ">
-                <form @submit.prevent="editMode? $wire.editData(): $wire.saveData()" class="relative py-3 px-5 md:px-10 bg-white dark:bg-darkSidebar shadow-md rounded border border-gray-400 dark:border-gray-600 capitalize">
-                    <h1 x-cloak x-show="!editMode" class="text-gray-800 dark:text-gray-200 font-lg font-semibold text-center mb-4">@lang('supplier invoice')</h1>
-                    <div class="flex flex-2 lg:flex-4 justify-between gap-2 capitalize pb-4 border-b-4 gr">
-                        <div>
-                            <span class="font-semibold">purchase no:</span>
-                            <span class="text-gray-700">#12</span>
-                        </div>
-                        <div>
-                            <span class="font-semibold">name:</span>
-                            <span class="text-gray-700">hr alamin</span>
-                        </div>
-                        <div>
-                            <span class="font-semibold">address:</span>
-                            <span class="text-gray-700 text-sm">nagerpara goshairhagt, shariatpur</span>
-                        </div>
-                        <div>
-                            <span class="font-semibold">phone:</span>
-                            <span class="text-gray-700">01458963254</span>
-                        </div>
-
-                    </div>
-
-
-                    <div class="w-full overflow-x-auto mt-8">
-                        <table  class="w-full text-center border-collapse border border-slate-500 whitespace-no-wrap">
-                            <thead>
-                            <tr
-                                class="text-xs text-center font-semibold dark:border-gray-700 bg-gray-50 dark:text-gray-300 dark:bg-darkSidebar"
-                            >
-                                <th class="font-semibold p-2 border border-purple-600">@lang('Sl')</th>
-                                <th class="font-semibold p-2 border border-purple-600">@lang('product')</th>
-                                <th class="font-semibold p-2 border border-purple-600">@lang('category')</th>
-                                <th class="font-semibold p-2 border border-purple-600">@lang('quantity')</th>
-                                <th class="font-semibold p-2 border border-purple-600">@lang('price')</th>
-                                <th class="font-semibold p-2 border border-purple-600">@lang('total')</th>
-                            </tr>
-                            </thead>
-                            <tbody
-                                class="bg-white divide-y capitalize dark:divide-gray-700 dark:bg-darkSidebar"
-                            >
-
-                            @foreach($inputs as $key=> $input)
-
-                                <tr id="item-id-{{$key}}" class="text-gray-700 dark:text-gray-300 capitalize">
-                                    @php
-                                        if($inputs[$key]['unit_price']>=1 && $inputs[$key]['quantity']>=1){
-                                        $full = $inputs[$key]['unit_price']*$inputs[$key]['quantity'];
-                                        }else{
-                                        $full = 0;
-                                        }
-                                        $product_blade = \App\Models\Product::find($inputs[$key]['product_id']);
-                                    @endphp
-                                    <td class="p-1 border border-purple-600">
-                                        {{$key+1}}
-                                    </td>
-                                    <td class="p-1 border border-purple-600">
-                                        {{ $product_blade->name }}
-                                    </td>
-                                    <td class="p-1 border border-purple-600">
-                                        {{ $product_blade->category->name }}
-                                    </td>
-                                    <td class="p-1 border border-purple-600">
-                                        {{$inputs[$key]['quantity']}}
-                                    </td>
-                                    <td class="p-1 border border-purple-600">
-                                        {{$inputs[$key]['unit_price']}}
-                                    </td>
-                                    <td class="p-1 border border-purple-600">
-                                        {{$full}}
-                                    </td>
-                                </tr>
-                            @endforeach
-                            <tr>
-                                <td colspan="5" class="p-1 border border-purple-600 text-gray-500 dark:text-gray-300 font-semibold text-sm">total:</td>
-                                <td class="p-1 border border-purple-600">{{$total}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="5" class="p-1 border border-purple-600 text-gray-500 dark:text-gray-300 font-semibold text-sm">discount:</td>
-                                <td class="p-1 border border-purple-600">{{$discount}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="5" class="p-1 border border-purple-600 text-gray-500 dark:text-gray-300 font-semibold text-sm">grand total:</td>
-                                <td class="p-1 border border-purple-600">{{$grand_total}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="5" class="p-1 border border-purple-600 text-gray-500 dark:text-gray-300 font-semibold text-sm">paid amount:</td>
-                                <td class="p-1 border border-purple-600">{{$paid_amount}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="5" class="p-1 border border-purple-600 text-gray-500 dark:text-gray-300 font-semibold text-sm">due amount:</td>
-                                <td class="p-1 border border-purple-600">{{$grand_total-$paid_amount}}</td>
-                            </tr>
-
-                            </tbody>
-                        </table>
-                        <div class="flex flex-3 lg:flex-4 justify-between gap-2 capitalize pt-2 border-t-2">
-                            <div>
-                                <span class="font-semibold text-sm">date:</span>
-                                <span class="text-gray-700 text-sm">{{date('M d, Y, h:j')}}</span>
-                            </div>
-                            <div>
-                                <span class="font-semibold text-sm">owner signature:</span>
-                            </div>
-                            <div>
-                                <span class="font-semibold text-sm">supplier signature:</span>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between w-full mt-4">
-                        <button type="button" @click="viewProduct=!viewProduct" class="bg-red-600 focus:ring-gray-400 transition duration-150 text-white ease-in-out hover:bg-red-300 rounded px-8 py-2 text-sm">Cancel</button>
-                        <button type="submit" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-700 transition duration-150 ease-in-out hover:bg-indigo-600 bg-indigo-700 rounded text-white px-8 py-2 text-sm">Submit</button>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-    </div>
-
+@include('livewire.dashboard.view-purchase-details')
 </div>
 

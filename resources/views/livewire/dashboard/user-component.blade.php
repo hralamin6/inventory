@@ -142,8 +142,10 @@ Swal.fire({
                                 <td class="px-4 py-3 text-sm">{{ $item->created_at }} </td>
                                 <td class="px-4 py-3 text-sm flex space-x-4">
                                     <x-h-o-pencil-square wire:target="loadData({{$item->id}})" wire:loading.class="animate-spin" @click.prevent="editModal({{$item->id}})" class="w-5 text-purple-600 cursor-pointer"/>
-{{--                                    <x-loader  wire:target="loadData({{$item->id}})"/>--}}
+                                    @if($item->purchases->has(0) || $item->invoices->has(0))
+                                    @else
                                     <x-h-o-trash @click.prevent="$dispatch('open-delete-modal', { title: 'Hello World!', text: 'you cant revert', icon: 'error', eventName: 'deleteSingle', model: {{$item->id}} })" class="w-5 text-pink-500 cursor-pointer"/>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

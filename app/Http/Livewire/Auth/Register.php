@@ -41,11 +41,11 @@ class Register extends Component
 
         Auth::login($user, true);
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('home'));
     }
 
     public function render()
     {
-        return view('livewire.auth.register')->extends('layouts.auth');
+        return view('livewire.auth.register');
     }
 }
