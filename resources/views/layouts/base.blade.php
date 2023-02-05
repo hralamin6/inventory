@@ -24,19 +24,27 @@
         @else
             <title>{{ config('app.name') }}</title>
         @endif
+        <link rel="stylesheet" href="{{asset('assets/fontaswesome/css/all.min.css')}}" />
+                <link rel="stylesheet" href="{{asset('assets/fontaswesome/css/fontawesome.min.css')}}" />
+
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/trix/1.3.1/trix.min.js" ></script>
         <link rel="shortcut icon" href="{{ url(asset('favicon.ico')) }}">
 {{--        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">--}}
         <style>
             [x-cloak] {
                 display: none;
             }
-
+            .flickity-viewport {
+                height: 500px !important;
+            }
             @media print {
                 #header, #footer, #url {
                     display: none;
                 }
             }
         </style>
+
         @vite(['resources/sass/app.scss'])
         @livewireStyles
                 @vite(['resources/js/app.js'])

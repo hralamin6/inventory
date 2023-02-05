@@ -19,19 +19,20 @@
         </div>
             <div class="capitalize">
 
-                <a href="{{route('dashboard')}}" class="navMenuLink {{Route::is('dashboard')?'navActive':'navInactive'}}">
-                    <x-h-o-home class="w-6"/><span class="">@lang('dashboard')</span>
-                </a>
-                <a href="{{route('users')}}" class="navMenuLink {{Route::is('users')?'navActive':'navInactive'}}">
-                    <x-h-o-users class="w-6"/><span class="">@lang('users')</span>
-                </a>
-                <a href="{{route('categories')}}" class="navMenuLink {{Route::is('categories')?'navActive':'navInactive'}}">
-                    <x-h-o-cube-transparent class="w-6"/><span class="">@lang('categories')</span>
-                </a>
-                <a href="{{route('brands')}}" class="navMenuLink {{Route::is('brands')?'navActive':'navInactive'}}">
-                    <x-h-o-cube class="w-6"/><span class="">@lang('brands')</span>
-                </a>
+
                 @can('isAdmin')
+                    <a href="{{route('dashboard')}}" class="navMenuLink {{Route::is('dashboard')?'navActive':'navInactive'}}">
+                        <x-h-o-home class="w-6"/><span class="">@lang('dashboard')</span>
+                    </a>
+                    <a href="{{route('users')}}" class="navMenuLink {{Route::is('users')?'navActive':'navInactive'}}">
+                        <x-h-o-users class="w-6"/><span class="">@lang('users')</span>
+                    </a>
+                    <a href="{{route('categories')}}" class="navMenuLink {{Route::is('categories')?'navActive':'navInactive'}}">
+                        <x-h-o-cube-transparent class="w-6"/><span class="">@lang('categories')</span>
+                    </a>
+                    <a href="{{route('brands')}}" class="navMenuLink {{Route::is('brands')?'navActive':'navInactive'}}">
+                        <x-h-o-cube class="w-6"/><span class="">@lang('brands')</span>
+                    </a>
                     <a href="{{route('units')}}" class="navMenuLink {{Route::is('units')?'navActive':'navInactive'}}">
                         <x-h-o-funnel class="w-6"/><span class="">@lang('units')</span>
                     </a>
@@ -43,6 +44,12 @@
                     </a>
                     <a href="{{route('dashboard.invoice')}}" class="navMenuLink {{Route::is('dashboard.invoice')?'navActive':'navInactive'}}">
                         <x-h-o-shopping-bag class="w-6"/><span class="">@lang('invoices')</span>
+                    </a>
+                    <a href="{{route('dashboard.attribute')}}" class="navMenuLink {{Route::is('dashboard.attribute')?'navActive':'navInactive'}}">
+                        <x-h-o-shopping-bag class="w-6"/><span class="">@lang('attributes')</span>
+                    </a>
+                    <a href="{{route('dashboard.chatbot')}}" class="navMenuLink {{Route::is('dashboard.chatbot')?'navActive':'navInactive'}}">
+                        <x-h-o-shopping-bag class="w-6"/><span class="">@lang('chatbot')</span>
                     </a>
                     <a href="{{route('setup')}}" class="navMenuLink {{Route::is('setup')?'navActive':'navInactive'}}">
                         <x-h-o-server class="w-6"/><span class="">@lang('setup')</span>

@@ -133,16 +133,13 @@ Swal.fire({
                                 </td>
                                 <td class="px-4 py-3">{{$items->firstItem() + $i}}</td>
                                 <td class="px-4 py-3 text-sm">{{ $item->name }} </td>
-                                <td class="px-4 py-3 text-sm">
-{{--                                    @php($asdf = $item->getMedia())--}}
-{{--                                    <span>{{$asdf[0]->getAvailableUrl(['default', 'thumb'])}}</span>--}}
-
-                                    @foreach($item->getMedia() as $k => $media)
-{{--                                        @php($m = $media->delete())--}}
-                                    <img style="height: 66px; width: 66px;" src="{{$media->getAvailableUrl(['thumb'])}}" alt="asdf">
-                                        <button class="text-sm font-bold" wire:click.prevent="deleteMedia({{$item}}, {{$k}})">Delete</button>
-                                        @endforeach
-
+                                <td class="px-4 py-3 text-sm flex gap-1 overflow-x-scroll">
+                                            @foreach($item->getMedia() as $k => $media)
+                                                <div class="border dark:border-gray-600 text-center">
+                                                    <img style="height: 44px; width: 55px;" src="{{$media->getAvailableUrl(['thumb'])}}" onerror="this.onerror=null;this.src='https://picsum.photos/id/10/600/300';">
+                                                    <button class="text-pink-500" wire:click.prevent="deleteMedia({{$item}}, {{$k}})"><x-h-o-x-mark class="w-5"/></button>
+                                                </div>
+                                            @endforeach
                                 </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->category->name }} </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->brand->name }} </td>
@@ -151,10 +148,10 @@ Swal.fire({
                                 <td class="px-4 py-3 text-sm">{{ $item->sellingUnit->name }} </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->unit_relation }} </td>
                                 <td class="px-4 py-3 text-xs">
-                                <span wire:click.prevent="changeStatus({{$item->id}})" class="text-white cursor-pointer px-2 py-1 font-semibold rounded-lg {{ $item->status=='active'? 'bg-green-300 dark:bg-green-700': 'bg-red-300 dark:bg-red-700' }} ">
-                                    {{ $item->status }}
-                                    <x-loader  wire:target="changeStatus({{$item->id}})"/>
-                                </span></td>
+                                    <button class="uppercase px-2 py-1 font-semibold leading-tight {{$item->status==='active'?'text-green-700 bg-green-100':'text-red-700 bg-red-100'}}  rounded-full " wire:click.prevent="changeStatus({{ $item->id }})">{{ $item->status }}
+                                        <span wire:loading wire:target="changeStatus({{ $item->id }})" class="animate-spin rounded-full h-4 w-4 border-2 border-black"></span></button>
+                                </td>
+
                                 <td class="px-4 py-3 text-sm">{{ $item->created_at }} </td>
                                 <td class="px-4 py-3 text-sm flex space-x-4">
                                     <x-h-o-pencil-square wire:target="loadData({{$item->id}})" wire:loading.class="animate-spin" @click.prevent="editModal({{$item->id}})" class="w-5 text-purple-600 cursor-pointer"/>
@@ -181,116 +178,139 @@ Swal.fire({
     <div x-cloak x-show="modal">
         <div class="fixed inset-0 z-10 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center"></div>
         <div  class="inset-0 py-4 rounded-2xl transition duration-150 ease-in-out z-50 absolute" id="modal">
-            <div @click.outside="closeModal" class="container mx-auto w-11/12 md:w-2/3 max-w-lg ">
+            <div @click.outside="" class="container mx-auto w-11/12 md:w-2/3 max-w-lg ">
                 <form @submit.prevent="editMode? $wire.editData(): $wire.saveData()" class="relative py-3 px-5 md:px-10 bg-white dark:bg-darkSidebar shadow-md rounded border border-gray-400 dark:border-gray-600 capitalize">
                     <h1 x-cloak x-show="!editMode" class="text-gray-800 dark:text-gray-200 font-lg font-semibold text-center mb-4">@lang('add new data')</h1>
                     <h1 x-cloak x-show="editMode" class="text-gray-800 dark:text-gray-200 font-lg font-semibold text-center mb-4">@lang('edit this data')</h1>
 
-                    <div class="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2">
+                    <div class="grid grid-cols-2 gap-2 mt-4">
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('name')</label>
-                            <input x-ref="input" id="input" wire:model.lazy="name" type="text" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <input x-ref="input" id="input" wire:model.lazy="name" type="text" class="input">
                             @error('name')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('overview')</label>
-                            <input wire:model.lazy="overview" type="text" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <input wire:model.lazy="overview" type="text" class="input">
                             @error('overview')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
-                        <div>
+
+                        <div class="col-span-2 overflow-scroll">
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('description')</label>
-                            <input wire:model.lazy="description" type="text" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <span wire:ignore>
+                                <trix-editor class="formatted-content" x-data x-on:trix-change="$dispatch('input', event.target.value)" wire:model.debounce.1000ms="description" wire:key="description"></trix-editor>
+                            </span>
                             @error('description')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('quantity')</label>
-                            <input wire:model.lazy="quantity" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <input wire:model.lazy="quantity" type="number" class="input">
                             @error('quantity')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('regular price')</label>
-                            <input wire:model.lazy="regular_price" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <input wire:model.lazy="regular_price" type="number" class="input">
                             @error('regular_price')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('actual price')</label>
-                            <input wire:model.lazy="actual_price" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <input wire:model.lazy="actual_price" type="number" class="input">
                             @error('actual_price')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('unit relation')</label>
-                            <input wire:model.lazy="unit_relation" type="number" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <input wire:model.lazy="unit_relation" type="number" class="input">
                             @error('unit_relation')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="category_id">@lang('category')</label>
-                            <x-select id="category_id" wire:model.lazy="category_id" >
-                                @foreach($categories as $category)
+                            <select id="category_id" class="input" wire:model.lazy="category_id" >
+                                <option value="">@lang('select cagtegory')</option>
+                            @foreach($categories as $category)
                                     <option value="{{$category->id}}">{{$category->name}}</option>
                                 @endforeach
-                            </x-select>
+                            </select>
                             @error('category_id')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="brand_id">@lang('brand')</label>
-                            <x-select id="brand_id" wire:model.lazy="brand_id" >
-                                @foreach($brands as $brand)
+                            <select class="input" id="brand_id" wire:model.lazy="brand_id" >
+                                <option value="">@lang('select brand')</option>
+                            @foreach($brands as $brand)
                                     <option value="{{$brand->id}}">{{$brand->name}}</option>
                                 @endforeach
-                            </x-select>
+                            </select>
                             @error('brand_id')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="buying_unit_id">@lang('buying unit')</label>
-                            <x-select id="buying_unit_id" wire:model.lazy="buying_unit_id" >
-                                @foreach($units as $unit)
+                            <select class="input" id="buying_unit_id" wire:model.lazy="buying_unit_id" >
+                                <option value="">@lang('select buying unit')</option>
+                            @foreach($units as $unit)
                                     <option value="{{$unit->id}}">{{$unit->name}}</option>
                                 @endforeach
-                            </x-select>
+                            </select>
                             @error('buying_unit_id')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="selling_unit_id">@lang('selling unit')</label>
-                            <x-select id="selling_unit_id" wire:model.lazy="selling_unit_id" >
-                                @foreach($units as $unit)
+                            <select class="input" id="selling_unit_id" wire:model.lazy="selling_unit_id" >
+                                <option value="">@lang('select selling unit')</option>
+                            @foreach($units as $unit)
                                     <option value="{{$unit->id}}">{{$unit->name}}</option>
                                 @endforeach
-                            </x-select>
+                            </select>
                             @error('selling_unit_id')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="type">@lang('status')</label>
-                            <x-select id="status" wire:model.lazy="status" >
+                            <select class="input" id="status" wire:model.lazy="status" >
+                                <option value="">@lang('select status')</option>
                                 <option value="active">@lang('active')</option>
                                 <option value="inactive">@lang('inactive')</option>
-                            </x-select>
+                            </select>
                             @error('status')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
-                        <div>
-                            <div class="list-inline flex justify-between gap-3"  x-data="{ isUploading: false, progress: 0 }" x-on:livewire-upload-start="isUploading = true" x-on:livewire-upload-finish="isUploading = false" x-on:livewire-upload-error="isUploading = false" x-on:livewire-upload-progress="progress = $event.detail.progress">
-                                <label class="cursor-pointer flex justify-content-start gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                                    </svg>
-                                    {{__("Choose image")}}
-                                    <input type="file" class="" wire:model.lazy="image">
-                                </label>
-                                <div class="col-md-4 list-inline-item" x-show="isUploading">
-                                    <progress max="100" x-bind:value="progress"></progress>
-                                </div>
-                                @if($product!=null)
-{{--                                    @php(dd($product->getUrl()))--}}
-                                    <img style="height: 66px; width: 66px;" src="{{$product->getFirstMediaUrl('default', 'thumb')}}" alt="">
-                                @endif
+                            <div>
+                                <label class="text-gray-700 dark:text-gray-200" for="attribute_id">@lang('attribute')</label>
+                                <select class="input" id="attribute_id" wire:model.lazy="attribute_id" >
+                                    <option value="">@lang('select attribute')</option>
+                                    @foreach($attributes as $attribute)
+                                        <option value="{{$attribute->id}}">{{$attribute->name}}</option>
+                                    @endforeach
+                                </select>
+                                @error('attribute_id')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                             </div>
-                            @error('image')<span class="text-sm text-red-600 dark:text-red-400">{{ $message }}</span>@enderror
-                        </div>
+                        @foreach($inputs as $key=> $input)
+
+                                    <div id="{{$key}}">
+                                        <label class="text-gray-700 dark:text-gray-200" for="input">{{\App\Models\Attribute::find($inputs[$key]['attribute_id'])->name}}</label>
+                                        <div class="flex gap-2">
+                                            <input wire:model.lazy="inputs.{{ $key }}.value" type="text" class="input">
+                                            <button wire:click="remove({{$key}})" class="p-2 bg-red-600 h-8 mt-3 rounded text-white"><x-h-o-x-mark class="w-5"/></button>
+                                        </div>
+                                        @error('inputs.'.$key.'.value')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+                        @endforeach
+                            <div class=""  x-data="{ isUploading: false, progress: 0 }" x-on:livewire-upload-start="isUploading = true" x-on:livewire-upload-finish="isUploading = false" x-on:livewire-upload-error="isUploading = false" x-on:livewire-upload-progress="progress = $event.detail.progress">
+                                <label class="text-gray-700 dark:text-gray-200">@lang('choose image')</label>
+                                <input type="file" class="input" wire:model.lazy="image">
+                                <div class="col-md-4 list-inline-item" x-show="isUploading"><progress max="100" x-bind:value="progress"></progress></div>
+                                @error('image')<span class="text-sm text-red-600 dark:text-red-400">{{ $message }}</span>@enderror
+                            </div>
                         <div>
                             <label class="text-gray-700 dark:text-gray-200" for="input">@lang('image link')</label>
-                            <input wire:model.lazy="image_link" type="url" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
+                            <input wire:model.lazy="image_link" type="url" class="input">
                             @error('image_link')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
 
+                    </div>
+                    <div class="flex gap-4">
+                        @if($product!=null)
+                            @foreach($product->getMedia() as $k => $media)
+                                <div><img style="height: 55px; width: 66px;" src="{{$media->getAvailableUrl(['thumb'])}}" onerror="this.onerror=null;this.src='https://picsum.photos/id/10/600/300';"></div>
+                            @endforeach
+                        @endif
                     </div>
                     <div class="flex items-center justify-between w-full mt-4">
                         <button type="button" @click="closeModal" class="bg-red-600 focus:ring-gray-400 transition duration-150 text-white ease-in-out hover:bg-red-300 rounded px-8 py-2 text-sm">Cancel</button>

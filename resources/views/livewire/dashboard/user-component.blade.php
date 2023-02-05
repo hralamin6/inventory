@@ -129,10 +129,9 @@ Swal.fire({
                                 <td class="px-4 py-3 text-sm">{{ $item->phone }} </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->address }} </td>
                                 <td class="px-4 py-3 text-xs">
-                                <span wire:click.prevent="changeStatus({{$item->id}})" class="text-white cursor-pointer px-2 py-1 font-semibold rounded-lg {{ $item->status=='active'? 'bg-green-300 dark:bg-green-700': 'bg-red-300 dark:bg-red-700' }} ">
-                                    {{ $item->status }}
-                                    <x-loader  wire:target="changeStatus({{$item->id}})"/>
-                                </span></td>
+                                    <button class="uppercase px-2 py-1 font-semibold leading-tight {{$item->status==='active'?'text-green-700 bg-green-100':'text-red-700 bg-red-100'}}  rounded-full " wire:click.prevent="changeStatus({{ $item->id }})">{{ $item->status }}
+                                        <span wire:loading wire:target="changeStatus({{ $item->id }})" class="animate-spin rounded-full h-4 w-4 border-2 border-black"></span></button>
+                                </td>
                                 <td class="px-4 py-3 text-xs">
                                 <span class="text-white cursor-pointer px-2 py-1 font-semibold rounded-lg
                                 {{ $item->type=='customer'?'bg-green-300 dark:bg-green-700' :($item->type=='supplier'? 'bg-blue-300 dark:bg-blue-700': ($item->type=='user'? 'bg-indigo-300 dark:bg-indigo-700':'bg-red-300 dark:bg-red-700')) }} ">

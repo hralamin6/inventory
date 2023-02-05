@@ -4,16 +4,24 @@ const colors = require('tailwindcss/colors');
 module.exports = {
     darkMode: 'class',
     theme: {
+        screen: {
+            sm: "576px",
+            md: "768px",
+            lg: "992px",
+            xl: "1200px",
+        },
+        container: {
+            center: true,
+            padding: "1rem",
+        },
         extend: {
-            colors: {
-                'lightBg': '#F4F6F9',
-                'darkBg': '#454D55',
-                'lightHeader': '#F8F9FA',
-                'darkSidebar': '#343A40',
-            },
             fontFamily: {
-                sans: ['Inter var', ...defaultTheme.fontFamily.sans],
-                myfont: ['MyFont', ...defaultTheme.fontFamily.sans],
+                poppins: ["Poppins", "sans-serif"],
+                roboto: ["Roboto", "sans-serif"],
+                myfont: ["MyFont", "sans-serif"],
+            },
+            colors: {
+                primary: "#fd3d57",
             },
         },
     },

@@ -38,8 +38,7 @@ class InvoiceComponent extends Component
     public $searchBy = 'id';
     public $orderDirection = 'asc';
     public $search = '';
-//    public $inputs = array();
-    public Collection $inputs;
+    public $inputs = [];
     protected $queryString = [
         'search' => ['except' => ''],
         'page' => ['except' => 1],
@@ -67,9 +66,6 @@ class InvoiceComponent extends Component
     }
     public function mount()
     {
-        $this->fill([
-            'inputs' => collect([]),
-        ]);
         $this->products = $this->product;
         $this->setValue();
         $this->invoiceDetails = [];
@@ -125,13 +121,12 @@ class InvoiceComponent extends Component
             }
         }
 
-            $this->inputs->push(['product_id'=>$this->product_id, 'quantity'=>null, 'unit_price'=>Product::find($this->product_id)->regular_price]);
+            $this->inputs[]=(['product_id'=>$this->product_id, 'quantity'=>null, 'unit_price'=>Product::find($this->product_id)->regular_price]);
     }
     public function remove($key)
     {
-        $this->inputs->pull($key);
+        unset($this->inputs[$key]);
         $this->calculation();
-//        unset($this->inputs[$key]);
         $this->inputs = array_values($this->inputs);
     }
 
@@ -191,7 +186,7 @@ class InvoiceComponent extends Component
         $this->payment = Payment::where('invoice_id', $invoice->id)->first();
         $this->paymentDetail = PaymentDetail::where('invoice_id', $invoice->id)->first();
         foreach ($this->invoiceDetails as $key => $invoiceDetail){
-            $this->inputs->push(['product_id'=>$invoiceDetail->product_id, 'quantity'=>$invoiceDetail->quantity, 'unit_price'=>$invoiceDetail->unit_price]);
+            $this->inputs[]=(['product_id'=>$invoiceDetail->product_id, 'quantity'=>$invoiceDetail->quantity, 'unit_price'=>$invoiceDetail->unit_price]);
         }
     }
     public function viewProduct(Invoice $invoice)
@@ -248,7 +243,6 @@ class InvoiceComponent extends Component
                     $invoiceDetail->user_id = $this->customer_id;
                     $invoiceDetail->status = 'inactive';
                     $invoiceDetail->save();
-                    $this->inputs->pull($key);
 
 
                 }
@@ -324,7 +318,6 @@ class InvoiceComponent extends Component
                     $invoiceDetail->user_id = $this->customer_id;
                     $invoiceDetail->status = 'inactive';
                     $invoiceDetail->save();
-                    $this->inputs->pull($key);
 
                 }
                 $payment = new Payment();
@@ -434,8 +427,9 @@ class InvoiceComponent extends Component
     {
         $this->reset('invoice_no', 'date', 'customer_id', 'total', 'grand_total', 'discount', 'note', 'paid_amount');
         foreach ($this->inputs as $key => $input) {
-            $this->inputs->pull($key);
+            unset($this->inputs[$key]);
         }
+        $this->inputs = array_values($this->inputs);
 
         $this->setValue();
     }

@@ -2,10 +2,13 @@
 
 namespace App\Http\Livewire\Dashboard;
 
+use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\PurchaseDetail;
 use App\Models\Unit;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
@@ -21,9 +24,9 @@ class ProductComponent extends Component
     use WithPagination;
     use LivewireAlert;
     use WithFileUploads;
-
+    public $inputs=[];
     public $product;
-    public $name, $image_link, $image,$asdf, $status='active', $quantity=0, $unit_relation=1, $category_id, $brand_id, $buying_unit_id, $selling_unit_id, $regular_price, $actual_price, $overview, $description;
+    public $name, $attribute_id, $image_link, $image,$asdf, $status='active', $quantity=0, $unit_relation=1, $category_id, $brand_id, $buying_unit_id, $selling_unit_id, $regular_price=0, $actual_price=0, $overview, $description;
     public $selectedRows = [];
     public $selectPageRows = false;
     public $itemPerPage;
@@ -37,7 +40,35 @@ class ProductComponent extends Component
     ];
 
     protected $listeners = ['deleteMultiple', 'deleteSingle'];
+    protected $rules = [
+        'inputs.*.value' => 'required',
+    ];
+    protected $validationAttributes  = [
+        'inputs.*.value' => 'Value',
+    ];
+    public function mount()
+    {
+    }
+    public function updatedAttributeId()
+    {
+        $data = $this->validate([
+            'attribute_id' => ['required'],
+        ]);
+        foreach ($this->inputs as $key => $input) {
+            if ($this->inputs[$key]['attribute_id'] == $this->attribute_id){
+                $this->alert('error', __('You can not select same attribute'));
 
+                return false;
+            }
+        }
+
+        $this->inputs[]=['attribute_id'=>$this->attribute_id, 'value'=>null];
+    }
+    public function remove($key)
+    {
+        unset($this->inputs[$key]);
+        $this->inputs = array_values($this->inputs);
+    }
     public function loadData(Product $product)
     {
         $this->reset('name', 'status', 'category_id', 'brand_id', 'quantity', 'unit_relation', 'buying_unit_id', 'selling_unit_id');
@@ -55,6 +86,13 @@ class ProductComponent extends Component
         $this->description = $product->description;
         $this->status = $product->status;
         $this->product = $product;
+        foreach ($this->product->attributeValues->unique('attribute_id')->pluck('attribute_id') as $i => $attribute) {
+            $string = '';
+            foreach ($this->product->attributeValues->where('attribute_id', $attribute) as $key => $attributeValue) {
+                $string = $string . $attributeValue->name . ',';
+            }
+            $this->inputs[] = (['attribute_id' => $attribute, 'value' => rtrim($string, ',')]);
+        }
     }
 
     public function openModal()
@@ -73,6 +111,7 @@ class ProductComponent extends Component
     {
         $this->validate([
             'image'=>'nullable|image',
+            'image_link'=>'nullable|image',
         ]);
 
         $data = $this->validate([
@@ -83,7 +122,7 @@ class ProductComponent extends Component
            'regular_price' => ['required', 'numeric'],
            'actual_price' => ['required', 'numeric'],
            'quantity' => ['required', 'numeric'],
-           'status' => ['required'],
+           'status' => ['nullable'],
            'category_id' => ['required'],
            'brand_id' => ['required'],
            'buying_unit_id' => ['required'],
@@ -94,16 +133,29 @@ class ProductComponent extends Component
             $a = $this->product->addMedia($this->image->getRealPath())->toMediaCollection();
             unlink("media/".$a->id.'/'. $a->file_name);
         }elseif ($this->image_link){
-            $this->product->clearMediaCollection();
+//            $this->product->clearMediaCollection();
             $this->product->addMediaFromUrl($this->image_link)->toMediaCollection();
             unlink("media/".$this->product->getFirstMedia()->id.'/'. $this->product->getFirstMedia()->file_name);
         }
+        $this->product->attributes()->detach();
+        foreach ($this->inputs as $key => $input) {
+            foreach (explode(',', $this->inputs[$key]['value']) as $value){
+                $this->product->attributes()->attach($this->inputs[$key]['attribute_id'], ['name' => $value]);
+            }
+        }
+        $this->resetData();
         $this->emit('dataAdded', ['dataId' => 'item-id-'.$this->product->id]);
         $this->alert('success', __('Data updated successfully'));
         $this->reset('name', 'status', 'category_id', 'brand_id', 'quantity', 'unit_relation', 'buying_unit_id', 'selling_unit_id');
     }
     public function saveData()
     {
+        $this->validate([
+            'image'=>'nullable|image',
+            'image_link'=>'nullable|image',
+        ]);
+        $this->validate();
+
         $data = $this->validate([
             'name' => ['required', 'min:2', 'max:33'],
             'overview' => ['nullable', 'min:2', 'max:333'],
@@ -118,10 +170,20 @@ class ProductComponent extends Component
             'buying_unit_id' => ['required'],
             'selling_unit_id' => ['required'],
         ]);
-//        Setup::first()->clearMediaCollection('register');
-//        Setup::first()->addMedia($this->register->getRealPath())->toMediaCollection('register');
         $data = Product::create($data);
-//        $data->addMedia($this->image->getRealPath())->toMediaCollection('logo');
+        if ($this->image){
+            $a = $data->addMedia($this->image->getRealPath())->toMediaCollection();
+            unlink("media/".$a->id.'/'. $a->file_name);
+        }elseif ($this->image_link){
+            $data->addMediaFromUrl($this->image_link)->toMediaCollection();
+            unlink("media/".$this->product->getFirstMedia()->id.'/'. $this->product->getFirstMedia()->file_name);
+        }
+        foreach ($this->inputs as $key => $input) {
+            foreach (explode(',', $this->inputs[$key]['value']) as $value){
+                $data->attributes()->attach($this->inputs[$key]['attribute_id'], ['name' => $value]);
+            }
+        }
+
         $this->reset('name', 'status', 'category_id', 'brand_id', 'quantity', 'unit_relation', 'buying_unit_id', 'selling_unit_id');
         $this->goToPage($this->getDataProperty()->lastPage());
         $this->emit('dataAdded', ['dataId' => 'item-id-'.$data->id]);
@@ -171,6 +233,11 @@ class ProductComponent extends Component
 
     public function resetData()
     {
+        foreach ($this->inputs as $key => $input) {
+            unset($this->inputs[$key]);
+        }
+        $this->inputs = array_values($this->inputs);
+
         $this->reset('name', 'status', 'category_id', 'brand_id', 'quantity', 'unit_relation', 'buying_unit_id', 'selling_unit_id');
     }
     public function render()
@@ -181,6 +248,7 @@ class ProductComponent extends Component
         $categories = Category::where('status', 'active')->get();
         $brands = Brand::where('status', 'active')->get();
         $units = Unit::where('status', 'active')->get();
-        return view('livewire.dashboard.product-component', compact('items', 'categories', 'brands', 'units'));
+        $attributes = Attribute::where('status', 'active')->get();
+        return view('livewire.dashboard.product-component', compact('items', 'categories', 'brands', 'units', 'attributes'));
     }
 }

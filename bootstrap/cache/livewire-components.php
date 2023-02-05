@@ -5,8 +5,10 @@
   'auth.passwords.reset' => 'App\\Http\\Livewire\\Auth\\Passwords\\Reset',
   'auth.register' => 'App\\Http\\Livewire\\Auth\\Register',
   'auth.verify' => 'App\\Http\\Livewire\\Auth\\Verify',
+  'dashboard.attribute-component' => 'App\\Http\\Livewire\\Dashboard\\AttributeComponent',
   'dashboard.brand-component' => 'App\\Http\\Livewire\\Dashboard\\BrandComponent',
   'dashboard.category-component' => 'App\\Http\\Livewire\\Dashboard\\CategoryComponent',
+  'dashboard.chatbot-componenet' => 'App\\Http\\Livewire\\Dashboard\\ChatbotComponenet',
   'dashboard.dashboard-component' => 'App\\Http\\Livewire\\Dashboard\\DashboardComponent',
   'dashboard.invoice-component' => 'App\\Http\\Livewire\\Dashboard\\InvoiceComponent',
   'dashboard.product-component' => 'App\\Http\\Livewire\\Dashboard\\ProductComponent',
@@ -15,4 +17,6 @@
   'dashboard.unit-component' => 'App\\Http\\Livewire\\Dashboard\\UnitComponent',
   'dashboard.user-component' => 'App\\Http\\Livewire\\Dashboard\\UserComponent',
   'header-component' => 'App\\Http\\Livewire\\HeaderComponent',
+  'home-component' => 'App\\Http\\Livewire\\HomeComponent',
+  'navbar-component' => 'App\\Http\\Livewire\\NavbarComponent',
 );

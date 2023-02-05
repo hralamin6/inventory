@@ -38,8 +38,7 @@ class PurchaseComponent extends Component
     public $searchBy = 'id';
     public $orderDirection = 'asc';
     public $search = '';
-//    public $inputs = array();
-    public Collection $inputs;
+    public $inputs = [];
     protected $queryString = [
         'search' => ['except' => ''],
         'page' => ['except' => 1],
@@ -67,9 +66,6 @@ class PurchaseComponent extends Component
     }
     public function mount()
     {
-        $this->fill([
-            'inputs' => collect([]),
-        ]);
         $this->products = $this->product;
         $this->setValue();
         $this->purchaseDetails = [];
@@ -125,13 +121,12 @@ class PurchaseComponent extends Component
             }
         }
 
-            $this->inputs->push(['product_id'=>$this->product_id, 'quantity'=>null, 'unit_price'=>null]);
+            $this->inputs[]=(['product_id'=>$this->product_id, 'quantity'=>null, 'unit_price'=>null]);
     }
     public function remove($key)
     {
-        $this->inputs->pull($key);
+        unset($this->inputs[$key]);
         $this->calculation();
-//        unset($this->inputs[$key]);
         $this->inputs = array_values($this->inputs);
     }
 
@@ -190,7 +185,7 @@ class PurchaseComponent extends Component
         $this->bill = Bill::where('purchase_id', $purchase->id)->first();
         $this->billDetail = BillDetail::where('purchase_id', $purchase->id)->first();
         foreach ($this->purchaseDetails as $key => $purchaseDetail){
-            $this->inputs->push(['product_id'=>$purchaseDetail->product_id, 'quantity'=>$purchaseDetail->quantity, 'unit_price'=>$purchaseDetail->unit_price]);
+            $this->inputs[] = (['product_id'=>$purchaseDetail->product_id, 'quantity'=>$purchaseDetail->quantity, 'unit_price'=>$purchaseDetail->unit_price]);
         }
     }
     public function viewProduct(Purchase $purchase)
@@ -240,9 +235,6 @@ class PurchaseComponent extends Component
                     $purchaseDetail->user_id = $this->supplier_id;
                     $purchaseDetail->status = 'inactive';
                     $purchaseDetail->save();
-                    $this->inputs->pull($key);
-
-
                 }
                 $this->bill->purchase_no = $this->purchase_no;
                 $this->bill->total_amount = $this->grand_total;
@@ -310,8 +302,6 @@ class PurchaseComponent extends Component
                     $purchaseDetail->user_id = $this->supplier_id;
                     $purchaseDetail->status = 'inactive';
                     $purchaseDetail->save();
-                    $this->inputs->pull($key);
-
                 }
                 $bill = new Bill();
                 $bill->purchase_no = $this->purchase_no;
@@ -413,8 +403,9 @@ class PurchaseComponent extends Component
     {
         $this->reset('purchase_no', 'date', 'supplier_id', 'total', 'grand_total', 'discount', 'note', 'paid_amount');
         foreach ($this->inputs as $key => $input) {
-            $this->inputs->pull($key);
+            unset($this->inputs[$key]);
         }
+        $this->inputs = array_values($this->inputs);
 
         $this->setValue();
     }

@@ -51,4 +51,13 @@ class Product extends Model implements HasMedia
             ->height(232)
             ->sharpen(10);
     }
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'attribute_values');
+    }
+    public function attributeValues()
+    {
+        return $this->hasMany(AttributeValue::class, 'product_id', 'id');
+    }
+
 }

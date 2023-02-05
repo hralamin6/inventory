@@ -132,10 +132,9 @@ Swal.fire({
                                 <td class="px-4 py-3 text-sm">{{ $item->supplier->name}}-{{$item->supplier->phone }} </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->note }} </td>
                                 <td class="px-4 py-3 text-xs">
-                                <span wire:click.prevent="changeStatus({{$item->id}})" class="text-white cursor-pointer px-2 py-1 font-semibold rounded-lg {{ $item->status=='active'? 'bg-green-300 dark:bg-green-700': 'bg-red-300 dark:bg-red-700' }} ">
-                                    {{ $item->status }}
-                                    <x-loader  wire:target="changeStatus({{$item->id}})"/>
-                                </span></td>
+                                    <button class="uppercase px-2 py-1 font-semibold leading-tight {{$item->status==='active'?'text-green-700 bg-green-100':'text-red-700 bg-red-100'}}  rounded-full " wire:click.prevent="changeStatus({{ $item->id }})">{{ $item->status }}
+                                        <span wire:loading wire:target="changeStatus({{ $item->id }})" class="animate-spin rounded-full h-4 w-4 border-2 border-black"></span></button>
+                                </td>
                                 <td class="px-4 py-3 text-sm">{{ $item->created_at }} </td>
                                 <td class="px-4 py-3 text-sm flex space-x-4">
                                     <a target="_blank" href="{{route('pdf.purchase', $item->id)}}" data-turbolinks="false"><x-h-o-printer class="w-5 text-purple-600 cursor-pointer"/></a>
